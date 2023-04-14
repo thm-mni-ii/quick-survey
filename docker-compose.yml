@@ -1,0 +1,28 @@
+version: '3'
+services:
+  postgres:
+    image: docker.io/postgis/postgis:15-3.3-alpine
+    volumes:
+      - './data/posgres:/var/lib/postgresql/data'
+      - './db-init:/docker-entrypoint-initdb.d:ro'
+    environment:
+      - POSTGRES_USER=parse
+      - POSTGRES_PASSWORD=parse
+      - POSTGRES_DB=parse
+  parse:
+    build: parse-server
+    ports:
+      - '127.0.0.1:1337:1337'
+    volumes:
+      - './data/parse:/parse-server/config'
+      - './cloud:/parse-server/cloud:ro'
+    command: [--appId, parse, --masterKey, parse, --databaseURI, postgresql://parse:parse@postgres/parse, --cloud, /parse-server/cloud/main.js, --masterKeyIps, 0.0.0.0/0]
+    depends_on:
+      - postgres
+  parse-dashboard:
+    image: docker.io/parseplatform/parse-dashboard:5.1.0-alpha.13
+    ports:
+      - '127.0.0.1:4040:4040'
+    command: [--dev, --appId, parse, --masterKey, parse, --serverURL, http://localhost:1337/parse]
+    depends_on:
+      - parse
