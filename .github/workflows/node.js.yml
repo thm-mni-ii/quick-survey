@@ -7,14 +7,14 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [18.x]
     defaults:
       run:
-        working-directory: ./app
+        working-directory: app
     steps:
     - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
