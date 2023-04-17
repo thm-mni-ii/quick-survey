@@ -26,3 +26,7 @@ services:
     command: [--dev, --appId, parse, --masterKey, parse, --serverURL, http://localhost:1337/parse]
     depends_on:
       - parse
+  ses:
+    build: spreadsheet-evaluation-server
+    ports:
+      - '127.0.0.1:8080:8080'
