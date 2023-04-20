@@ -22,5 +22,7 @@ export function createDataGrid(parentNode: any): any {
     showFilter: false,
     showNewRow: false,
     showOrderByOption: false,
+    autoResizeColumns: true,
+    autoResizeRows: true,
   });
 }
