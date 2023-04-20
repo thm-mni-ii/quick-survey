@@ -1,8 +1,8 @@
 import { QuestionTypeProps } from '../index';
-import 'canvas-datagrid';
 import { useRef } from 'preact/compat';
-import { useEffect } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { SpreadsheetEvaluator } from '../../../../lib/spreadsheetEvaluator';
+import { createDataGrid } from '../../../../lib/grid';
 
 /**
  * The Excel question component
@@ -11,15 +11,25 @@ import { SpreadsheetEvaluator } from '../../../../lib/spreadsheetEvaluator';
  * @constructor
  */
 export function ExcelQuestion({ question, onChange }: QuestionTypeProps) {
-  const grid = useRef<any>();
+  const gridParent = useRef<any>();
 
   const data = question.options.data;
 
+  const [grid, setGrid] = useState<any>();
   useEffect(() => {
+    setGrid(createDataGrid(gridParent.current));
+
+    return () => {
+      setGrid(undefined);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!grid) return;
     const evaluate = new SpreadsheetEvaluator();
     evaluate.evaluate(data).then(() => {});
 
-    grid.current.data = question.options.data;
+    grid.data = question.options.data;
 
     const formatHandler = async (event: any) => {
       const formula = event.cell.value;
@@ -40,22 +50,21 @@ export function ExcelQuestion({ question, onChange }: QuestionTypeProps) {
       }
       data[event.cell.viewRowIndex][event.cell.viewColumnIndex] = value;
       evaluate.evaluate(data).then(() => {
-        grid.current.gotoCell(event.cell.viewColumnIndex, event.cell.viewRowIndex);
+        grid.gotoCell(event.cell.viewColumnIndex, event.cell.viewRowIndex);
         formatHandler(event);
       });
       onChange({ data });
     };
 
-    grid.current.addEventListener('formattext', formatHandler);
-    grid.current.addEventListener('endedit', editHandler);
+    grid.addEventListener('formattext', formatHandler);
+    grid.addEventListener('endedit', editHandler);
 
-    const gc = grid.current;
+    const gc = grid;
     return () => {
       gc.removeEventListener('formattext', formatHandler);
       gc.removeEventListener('endedit', editHandler);
     };
   }, [data, grid, question, onChange]);
 
-  // @ts-ignore
-  return <div style={{ overflow: 'auto' }}><canvas-datagrid ref={grid} /></div>;
+  return <div ref={gridParent} style={{ overflow: 'auto' }} />;
 }
