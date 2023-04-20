@@ -16,7 +16,7 @@ export interface QuestionPageProps {
     survey: Survey
     page: number
     questions: Question[]
-    onNext: (answers: Record<string, any>) => void
+    onNext: (answers: Record<string, any>, time: number) => void
 }
 
 /**
@@ -32,6 +32,12 @@ export default function QuestionPage({ survey, page, questions, onNext }: Questi
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [missing, setMissing] = useState(false);
 
+  const [time, setTime] = useState(0);
+
+  useEffect(() => {
+    setTime(new Date().getTime());
+  }, [page]);
+
   const nextClick = () => {
     setLoading(true);
     for (const [questionId, answer] of Object.entries(answers)) {
@@ -42,7 +48,7 @@ export default function QuestionPage({ survey, page, questions, onNext }: Questi
         return;
       }
     }
-    onNext(answers);
+    onNext(answers, new Date().getTime() - time);
   };
 
   const updateAnswer = (question: Question, answer: any) => {

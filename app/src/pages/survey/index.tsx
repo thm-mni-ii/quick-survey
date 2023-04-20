@@ -62,7 +62,7 @@ export default function SurveyPage() {
     setQuestions(questions.map((question) => question.toJSON() as any));
   };
 
-  const next = async (answers: Record<string, any>) => {
+  const next = async (answers: Record<string, any>, time: number) => {
     for (const [id, answer] of Object.entries(answers)) {
       if (!answer) continue;
       const ao = new AnswerObject();
@@ -70,6 +70,7 @@ export default function SurveyPage() {
       ao.set('question', { __type: 'Pointer', className: 'Question', objectId: id });
       ao.set('participant', { __type: 'Pointer', className: 'Participant', objectId: participant!!.objectId });
       ao.set('answer', answer);
+      ao.set('time', time);
       ao.set('participantId', participant!!.identifier);
       await ao.save();
     }
