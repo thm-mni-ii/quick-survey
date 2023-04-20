@@ -3,6 +3,8 @@ import { useRef } from 'preact/compat';
 import { useEffect, useState } from 'preact/hooks';
 import { SpreadsheetEvaluator } from '../../../../lib/spreadsheetEvaluator';
 import { createDataGrid } from '../../../../lib/grid';
+import { UndoManager } from '../../../../lib/undo-manager';
+
 
 /**
  * The Excel question component
@@ -28,9 +30,11 @@ export function ExcelQuestion({ question, onChange }: QuestionTypeProps) {
   useEffect(() => {
     if (!grid) return;
     const evaluate = new SpreadsheetEvaluator();
+    const undoManager = new UndoManager<any[][]>();
     evaluate.evaluate(data).then(() => {});
 
-    grid.data = question.options.data;
+    grid.data = data;
+    undoManager.push(data);
 
     const formatHandler = (cell: any) => {
       const formula = cell.value;
@@ -60,26 +64,47 @@ export function ExcelQuestion({ question, onChange }: QuestionTypeProps) {
     };
 
     const formatTextHandler = (event: any) => formatHandler(event.cell);
-    const editEndHandler = (event: any) => changeHandler(event.cell, event.value);
+    const editEndHandler = (event: any) => {
+      changeHandler(event.cell, event.value);
+      undoManager.push(data);
+    };
     const afterPasteHandler = (event: any) => setTimeout(
-        () => event.cells.forEach(
-            (cell: any) => {
-              const c = grid.getVisibleCellByIndex(cell[1], cell[0]);
-              changeHandler(c);
-            },
-        ),
-        0,
+        () => {
+          event.cells.forEach(
+              (cell: any) => {
+                const c = grid.getVisibleCellByIndex(cell[1], cell[0]);
+                changeHandler(c);
+              },
+          );
+          undoManager.push(data);
+        }, 0,
     );
+    const onKeyPress = (event: any) => {
+      let newData: any[][]|undefined;
+      if (event.ctrlKey && event.keyCode === 26) {
+        newData = undoManager.undo();
+      } else if (event.ctrlKey && event.keyCode === 25) {
+        newData = undoManager.redo();
+      }
+      if (!newData) return;
+      for (let i = 0; i < newData.length; i++) {
+        for (let j = 0; j < newData[i].length; j++) {
+          changeHandler(grid.getVisibleCellByIndex(j, i), newData[i][j]);
+        }
+      }
+    };
 
     grid.addEventListener('formattext', formatTextHandler);
     grid.addEventListener('endedit', editEndHandler);
     grid.addEventListener('afterpaste', afterPasteHandler);
+    document.addEventListener('keypress', onKeyPress);
 
     const gc = grid;
     return () => {
       gc.removeEventListener('formattext', formatHandler);
       gc.removeEventListener('endedit', editEndHandler);
       gc.removeEventListener('afterpaste', afterPasteHandler);
+      document.removeEventListener('keypress', onKeyPress);
     };
   }, [data, grid, question, onChange]);
 
