@@ -20,9 +20,10 @@ export function ExcelQuestion({ question, onChange }: QuestionTypeProps) {
     setGrid(createDataGrid(gridParent.current));
 
     return () => {
+      document.querySelector('.canvas-datagrid-edit-input')?.remove();
       setGrid(undefined);
     };
-  }, []);
+  }, [gridParent]);
 
   useEffect(() => {
     if (!grid) return;
@@ -31,38 +32,54 @@ export function ExcelQuestion({ question, onChange }: QuestionTypeProps) {
 
     grid.data = question.options.data;
 
-    const formatHandler = async (event: any) => {
-      const formula = event.cell.value;
+    const formatHandler = (cell: any) => {
+      const formula = cell.value;
       if (formula.toString().startsWith('=')) {
         try {
-          event.cell.formattedValue = evaluate.get(event.cell.viewRowIndex, event.cell.viewColumnIndex)?.toString();
+          cell.formattedValue = evaluate.get(cell.viewRowIndex, cell.viewColumnIndex)?.toString();
         } catch (e) {
           console.error('An error occurred', formula, e);
         }
       }
     };
 
-    const editHandler = async (event: any) => {
+    const changeHandler = (cell: any, newValue: any = cell.value) => {
       let value;
-      value = Number.parseInt(event.value, 10);
+      value = Number.parseInt(newValue, 10);
       if (isNaN(value)) {
-        value = event.value;
+        value = cell.value;
       }
-      data[event.cell.viewRowIndex][event.cell.viewColumnIndex] = value;
-      evaluate.evaluate(data).then(() => {
-        grid.gotoCell(event.cell.viewColumnIndex, event.cell.viewRowIndex);
-        formatHandler(event);
-      });
+      try {
+        data[cell.viewRowIndex][cell.viewColumnIndex] = value;
+        evaluate.evaluate(data).then(() => {
+          grid.gotoCell(cell.viewColumnIndex, cell.viewRowIndex);
+          formatHandler(cell);
+        });
+      } catch (e) {/* Do nothing */}
       onChange({ data });
     };
 
-    grid.addEventListener('formattext', formatHandler);
-    grid.addEventListener('endedit', editHandler);
+    const formatTextHandler = (event: any) => formatHandler(event.cell);
+    const editEndHandler = (event: any) => changeHandler(event.cell, event.value);
+    const afterPasteHandler = (event: any) => setTimeout(
+        () => event.cells.forEach(
+            (cell: any) => {
+              const c = grid.getVisibleCellByIndex(cell[1], cell[0]);
+              changeHandler(c);
+            },
+        ),
+        0,
+    );
+
+    grid.addEventListener('formattext', formatTextHandler);
+    grid.addEventListener('endedit', editEndHandler);
+    grid.addEventListener('afterpaste', afterPasteHandler);
 
     const gc = grid;
     return () => {
       gc.removeEventListener('formattext', formatHandler);
-      gc.removeEventListener('endedit', editHandler);
+      gc.removeEventListener('endedit', editEndHandler);
+      gc.removeEventListener('afterpaste', afterPasteHandler);
     };
   }, [data, grid, question, onChange]);
 
