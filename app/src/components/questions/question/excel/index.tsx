@@ -37,13 +37,21 @@ export function ExcelQuestion({ question, onChange }: QuestionTypeProps) {
     undoManager.push(data);
 
     const formatHandler = (cell: any) => {
-      const formula = cell.value;
-      if (formula.toString().startsWith('=')) {
+      let value = cell.value;
+      if (value.toString().startsWith('=')) {
         try {
-          cell.formattedValue = evaluate.get(cell.viewRowIndex, cell.viewColumnIndex)?.toString();
+          value = evaluate.get(cell.viewRowIndex, cell.viewColumnIndex)?.toString();
         } catch (e) {
-          console.error('An error occurred', formula, e);
+          console.error('An error occurred', value, e);
         }
+      }
+      if (!isNaN(Number.parseInt(value, 10))) {
+        cell.horizontalAlignment = 'right';
+      }
+      if (value) {
+        cell.formattedValue = value.toString();
+      } else {
+        cell.formattedValue = undefined;
       }
     };
 
@@ -51,7 +59,7 @@ export function ExcelQuestion({ question, onChange }: QuestionTypeProps) {
       let value;
       value = Number.parseInt(newValue, 10);
       if (isNaN(value)) {
-        value = cell.value;
+        value = newValue;
       }
       try {
         data[cell.viewRowIndex][cell.viewColumnIndex] = value;
