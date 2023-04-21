@@ -4,6 +4,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { SpreadsheetEvaluator } from '../../../../lib/spreadsheetEvaluator';
 import { createDataGrid } from '../../../../lib/grid';
 import { UndoManager } from '../../../../lib/undo-manager';
+import { ExcelBar } from './bar';
 
 
 /**
@@ -16,6 +17,9 @@ export function ExcelQuestion({ question, onChange }: QuestionTypeProps) {
   const gridParent = useRef<any>();
 
   const data = question.options.data;
+
+  const [formulaBarValue, setFormulaBarValue] = useState();
+  const [formulaBarChangeHandler, setFormulaBarChangeHandler] = useState<(value: string|undefined) => void>(() => {});
 
   const [grid, setGrid] = useState<any>();
   useEffect(() => {
@@ -101,20 +105,41 @@ export function ExcelQuestion({ question, onChange }: QuestionTypeProps) {
         }
       }
     };
+    const selectionChangeHandler = (event: any) => {
+      setTimeout(() => {
+        const activeCell = grid.activeCell;
+        const cell = grid.getVisibleCellByIndex(activeCell.columnIndex, activeCell.rowIndex);
+        setFormulaBarValue(cell.value);
+      }, 0);
+    };
 
     grid.addEventListener('formattext', formatTextHandler);
     grid.addEventListener('endedit', editEndHandler);
     grid.addEventListener('afterpaste', afterPasteHandler);
+    grid.addEventListener('selectionchanged', selectionChangeHandler);
     document.addEventListener('keypress', onKeyPress);
+
+    setFormulaBarChangeHandler(() => (value: string|undefined) => {
+      if (!value) return;
+      const activeCell = grid.activeCell;
+      const cell = grid.getVisibleCellByIndex(activeCell.columnIndex, activeCell.rowIndex);
+      changeHandler(cell, value);
+      setFormulaBarValue(value as any);
+      return undefined;
+    });
 
     const gc = grid;
     return () => {
       gc.removeEventListener('formattext', formatHandler);
       gc.removeEventListener('endedit', editEndHandler);
       gc.removeEventListener('afterpaste', afterPasteHandler);
+      gc.removeEventListener('selectionchanged', selectionChangeHandler);
       document.removeEventListener('keypress', onKeyPress);
     };
-  }, [data, grid, question, onChange]);
+  }, [data, grid, question, onChange, setFormulaBarValue, setFormulaBarChangeHandler]);
 
-  return <div ref={gridParent} style={{ overflow: 'auto' }} />;
+  return <>
+    <ExcelBar defaultValue={formulaBarValue} onChange={formulaBarChangeHandler} />
+    <div ref={gridParent} style={{ overflow: 'auto' }} />
+  </>;
 }
