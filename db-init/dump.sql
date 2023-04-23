@@ -218,6 +218,25 @@ CREATE TABLE public."Answer" (
 ALTER TABLE public."Answer" OWNER TO parse;
 
 --
+-- Name: Authentication; Type: TABLE; Schema: public; Owner: parse
+--
+
+CREATE TABLE public."Authentication" (
+    "objectId" text NOT NULL,
+    "createdAt" timestamp with time zone,
+    "updatedAt" timestamp with time zone,
+    _rperm text[],
+    _wperm text[],
+    name text,
+    type text,
+    "publicConfig" jsonb,
+    "privateConfig" jsonb
+);
+
+
+ALTER TABLE public."Authentication" OWNER TO parse;
+
+--
 -- Name: Participant; Type: TABLE; Schema: public; Owner: parse
 --
 
@@ -227,7 +246,9 @@ CREATE TABLE public."Participant" (
     "updatedAt" timestamp with time zone,
     _rperm text[],
     _wperm text[],
-    identifier text
+    identifier text,
+    "authenticationInformation" jsonb,
+    survey text
 );
 
 
@@ -271,7 +292,8 @@ CREATE TABLE public."Survey" (
     description text,
     "activeFrom" timestamp with time zone,
     "activeTo" timestamp with time zone,
-    creator text
+    creator text,
+    authentication text
 );
 
 
@@ -529,19 +551,22 @@ CREATE TABLE public."_User" (
 
 ALTER TABLE public."_User" OWNER TO parse;
 
+
 --
 -- Data for Name: _SCHEMA; Type: TABLE DATA; Schema: public; Owner: parse
 --
 
 COPY public."_SCHEMA" ("className", schema, "isParseClass") FROM stdin;
-Answer	{"fields": {"ACL": {"type": "ACL"}, "time": {"type": "Number", "required": false}, "answer": {"type": "Object", "required": true}, "objectId": {"type": "String"}, "question": {"type": "Pointer", "required": true, "targetClass": "Question"}, "createdAt": {"type": "Date"}, "updatedAt": {"type": "Date"}, "participant": {"type": "Pointer", "required": true, "targetClass": "Participant"}}, "className": "Answer", "classLevelPermissions": {"get": {"requiresAuthentication": true}, "find": {"requiresAuthentication": true}, "count": {"requiresAuthentication": true}, "create": {"*": true, "requiresAuthentication": true}, "delete": {"*": true, "requiresAuthentication": true}, "update": {"*": true, "requiresAuthentication": true}, "addField": {}, "protectedFields": {"*": []}}}	t
 _User	{"fields": {"email": {"type": "String"}, "_rperm": {"type": "Array", "contents": {"type": "String"}}, "_wperm": {"type": "Array", "contents": {"type": "String"}}, "authData": {"type": "Object"}, "objectId": {"type": "String"}, "username": {"type": "String"}, "createdAt": {"type": "Date"}, "updatedAt": {"type": "Date"}, "emailVerified": {"type": "Boolean"}, "_hashed_password": {"type": "String"}}, "className": "_User", "classLevelPermissions": {"get": {"requiresAuthentication": true}, "find": {"requiresAuthentication": true}, "count": {"requiresAuthentication": true}, "create": {"requiresAuthentication": true}, "delete": {"requiresAuthentication": true}, "update": {"requiresAuthentication": true}, "addField": {}, "protectedFields": {"*": []}}}	t
 Question	{"fields": {"ACL": {"type": "ACL"}, "page": {"type": "Number", "required": true, "defaultValue": 1}, "type": {"type": "String", "required": true}, "title": {"type": "String", "required": true}, "survey": {"type": "Pointer", "required": true, "targetClass": "Survey"}, "options": {"type": "Object", "required": false}, "objectId": {"type": "String"}, "position": {"type": "Number", "required": true}, "required": {"type": "Boolean", "required": true, "defaultValue": false}, "createdAt": {"type": "Date"}, "timeLimit": {"type": "Number", "required": false}, "updatedAt": {"type": "Date"}, "description": {"type": "String", "required": false}}, "className": "Question", "classLevelPermissions": {"get": {"*": true, "requiresAuthentication": true}, "find": {"*": true, "requiresAuthentication": true}, "count": {"*": true, "requiresAuthentication": true}, "create": {"requiresAuthentication": true}, "delete": {"requiresAuthentication": true}, "update": {"requiresAuthentication": true}, "addField": {}, "protectedFields": {"*": []}}}	t
 _Session	{"fields": {"user": {"type": "Pointer", "targetClass": "_User"}, "_rperm": {"type": "Array", "contents": {"type": "String"}}, "_wperm": {"type": "Array", "contents": {"type": "String"}}, "objectId": {"type": "String"}, "createdAt": {"type": "Date"}, "expiresAt": {"type": "Date"}, "updatedAt": {"type": "Date"}, "createdWith": {"type": "Object"}, "sessionToken": {"type": "String"}, "installationId": {"type": "String"}}, "className": "_Session", "classLevelPermissions": {"get": {}, "find": {}, "count": {}, "create": {}, "delete": {}, "update": {}, "addField": {}, "protectedFields": {"*": []}}}	t
 _Role	{"fields": {"name": {"type": "String"}, "roles": {"type": "Relation", "targetClass": "_Role"}, "users": {"type": "Relation", "targetClass": "_User"}, "_rperm": {"type": "Array", "contents": {"type": "String"}}, "_wperm": {"type": "Array", "contents": {"type": "String"}}, "objectId": {"type": "String"}, "createdAt": {"type": "Date"}, "updatedAt": {"type": "Date"}}, "className": "_Role", "classLevelPermissions": {"get": {"requiresAuthentication": true}, "find": {"requiresAuthentication": true}, "count": {"requiresAuthentication": true}, "create": {}, "delete": {}, "update": {}, "addField": {}, "protectedFields": {"*": []}}}	t
-Participant	{"fields": {"ACL": {"type": "ACL"}, "objectId": {"type": "String"}, "createdAt": {"type": "Date"}, "updatedAt": {"type": "Date"}, "identifier": {"type": "String", "required": true}}, "className": "Participant", "classLevelPermissions": {"get": {"requiresAuthentication": true}, "find": {"requiresAuthentication": true}, "count": {"requiresAuthentication": true}, "create": {"*": true, "requiresAuthentication": true}, "delete": {"*": true, "requiresAuthentication": true}, "update": {"*": true, "requiresAuthentication": true}, "addField": {}, "protectedFields": {"*": []}}}	t
-Survey	{"fields": {"name": {"type": "String", "required": true}, "_rperm": {"type": "Array", "contents": {"type": "String"}}, "_wperm": {"type": "Array", "contents": {"type": "String"}}, "creator": {"type": "Pointer", "required": true, "targetClass": "_User"}, "activeTo": {"type": "Date", "required": false}, "objectId": {"type": "String"}, "createdAt": {"type": "Date"}, "updatedAt": {"type": "Date"}, "activeFrom": {"type": "Date", "required": false}, "description": {"type": "String", "required": false}}, "className": "Survey", "classLevelPermissions": {"get": {"*": true, "requiresAuthentication": true}, "find": {"*": true, "requiresAuthentication": true}, "count": {"*": true, "requiresAuthentication": true}, "create": {"requiresAuthentication": true}, "delete": {"requiresAuthentication": true}, "update": {"requiresAuthentication": true}, "addField": {}, "protectedFields": {"*": []}}}	t
+Answer	{"fields": {"ACL": {"type": "ACL"}, "time": {"type": "Number", "required": false}, "answer": {"type": "Object", "required": true}, "objectId": {"type": "String"}, "question": {"type": "Pointer", "required": true, "targetClass": "Question"}, "createdAt": {"type": "Date"}, "updatedAt": {"type": "Date"}, "participant": {"type": "Pointer", "required": true, "targetClass": "Participant"}}, "className": "Answer", "classLevelPermissions": {"get": {"requiresAuthentication": true}, "find": {"requiresAuthentication": true}, "count": {"requiresAuthentication": true}, "create": {"*": true, "requiresAuthentication": true}, "delete": {"*": true, "requiresAuthentication": true}, "update": {"*": true, "requiresAuthentication": true}, "addField": {}, "protectedFields": {"*": []}}}	t
+Participant	{"fields": {"ACL": {"type": "ACL"}, "survey": {"type": "Pointer", "required": true, "targetClass": "Survey"}, "objectId": {"type": "String"}, "createdAt": {"type": "Date"}, "updatedAt": {"type": "Date"}, "identifier": {"type": "String", "required": true}, "authenticationInformation": {"type": "Object", "required": false}}, "className": "Participant", "classLevelPermissions": {"get": {"requiresAuthentication": true}, "find": {"requiresAuthentication": true}, "count": {"requiresAuthentication": true}, "create": {"*": true, "requiresAuthentication": true}, "delete": {"*": true, "requiresAuthentication": true}, "update": {"*": true, "requiresAuthentication": true}, "addField": {}, "protectedFields": {"*": []}}}	t
+Survey	{"fields": {"name": {"type": "String", "required": true}, "_rperm": {"type": "Array", "contents": {"type": "String"}}, "_wperm": {"type": "Array", "contents": {"type": "String"}}, "creator": {"type": "Pointer", "required": true, "targetClass": "_User"}, "activeTo": {"type": "Date", "required": false}, "objectId": {"type": "String"}, "createdAt": {"type": "Date"}, "updatedAt": {"type": "Date"}, "activeFrom": {"type": "Date", "required": false}, "description": {"type": "String", "required": false}, "authentication": {"type": "Pointer", "required": false, "targetClass": "Authentication"}}, "className": "Survey", "classLevelPermissions": {"get": {"*": true, "requiresAuthentication": true}, "find": {"*": true, "requiresAuthentication": true}, "count": {"*": true, "requiresAuthentication": true}, "create": {"requiresAuthentication": true}, "delete": {"requiresAuthentication": true}, "update": {"requiresAuthentication": true}, "addField": {}, "protectedFields": {"*": []}}}	t
+Authentication	{"fields": {"ACL": {"type": "ACL"}, "name": {"type": "String", "required": true}, "type": {"type": "String", "required": true}, "objectId": {"type": "String"}, "createdAt": {"type": "Date"}, "updatedAt": {"type": "Date"}, "publicConfig": {"type": "Object", "required": false}, "privateConfig": {"type": "Object", "required": false}}, "className": "Authentication", "classLevelPermissions": {"get": {"*": true, "requiresAuthentication": true}, "find": {"*": true, "requiresAuthentication": true}, "count": {"*": true, "requiresAuthentication": true}, "create": {"requiresAuthentication": true}, "delete": {"requiresAuthentication": true}, "update": {"requiresAuthentication": true}, "addField": {}, "protectedFields": {"*": ["privateConfig"]}}}	t
 \.
+
 
 --
 -- Name: Answer Answer_pkey; Type: CONSTRAINT; Schema: public; Owner: parse
@@ -549,6 +574,14 @@ Survey	{"fields": {"name": {"type": "String", "required": true}, "_rperm": {"typ
 
 ALTER TABLE ONLY public."Answer"
     ADD CONSTRAINT "Answer_pkey" PRIMARY KEY ("objectId");
+
+
+--
+-- Name: Authentication Authentication_pkey; Type: CONSTRAINT; Schema: public; Owner: parse
+--
+
+ALTER TABLE ONLY public."Authentication"
+    ADD CONSTRAINT "Authentication_pkey" PRIMARY KEY ("objectId");
 
 
 --

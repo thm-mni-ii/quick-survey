@@ -10,13 +10,14 @@ import Parse, {
   SurveyObject,
 } from '../../lib/parse';
 import { useParams } from 'react-router-dom';
-import { Loading } from '../../components/ui/loading';
+import Loading from '../../components/ui/loading';
 import SurveyOverview from '../../components/questions/overview';
 import { setNoNavigate } from '../../lib/no-navigate';
 import { v4 as uuidv4 } from 'uuid';
 import QuestionPage from '../../components/questions/page';
 import SurveyEnd from '../../components/questions/end';
-import { NotFound } from '../../components/ui/not-found';
+import NotFound from '../../components/ui/not-found';
+import SurveyLogin from '../../components/questions/login';
 
 /**
  * The survey page
@@ -35,19 +36,31 @@ export default function SurveyPage() {
     const query = new Parse.Query(SurveyObject);
     query.equalTo('objectId', id);
 
-    const survey = await query.first();
+    const survey = await query.first()
+        .then((survey) => survey?.fetchWithInclude(['authentication']));
     if (!survey) {
       setNotFound(true);
+      return;
     }
-    setSurvey(survey?.toJSON() as any);
+    setSurvey(survey.toJSON() as any);
   }, [id, setNotFound, setSurvey]);
 
   const startSurvey = async () => {
     setNoNavigate(true);
-    const participant = new ParticipantObject();
-    participant.set('identifier', uuidv4());
-    const savedParticipant = await participant.save();
-    const p = savedParticipant.toJSON() as any;
+
+    let p;
+
+    const storedParticipant = sessionStorage.getItem(`participant/${id}`);
+    if (storedParticipant) {
+      p = JSON.parse(storedParticipant);
+    } else {
+      const participant = new ParticipantObject();
+      participant.set('identifier', uuidv4());
+      participant.set('survey', { __type: 'Pointer', className: 'Survey', objectId: survey?.objectId });
+      const savedParticipant = await participant.save();
+      p = savedParticipant.toJSON() as any;
+    }
+
     setParticipant(p);
     await loadQuestions(1, p);
   };
@@ -88,6 +101,10 @@ export default function SurveyPage() {
 
   if (!survey) {
     return <Loading />;
+  }
+
+  if (survey.authentication && !sessionStorage.getItem(`participant/${id}`)) {
+    return <SurveyLogin authentication={survey.authentication} survey={survey} />;
   }
 
   if (!questions) {

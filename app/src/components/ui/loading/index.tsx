@@ -10,7 +10,7 @@ import {
  * A card with a loading spinner
  * @constructor
  */
-export function Loading() {
+export default function Loading() {
   return <Container maxWidth="sm">
     <Card>
       <CardContent>

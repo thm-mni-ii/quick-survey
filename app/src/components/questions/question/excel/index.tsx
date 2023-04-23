@@ -1,7 +1,7 @@
 import { QuestionTypeProps } from '../index';
 import { useRef } from 'preact/compat';
 import { useEffect, useState } from 'preact/hooks';
-import { SpreadsheetEvaluator } from '../../../../lib/spreadsheetEvaluator';
+import { SpreadsheetEvaluator } from '../../../../lib/spreadsheet-evaluator';
 import { createDataGrid } from '../../../../lib/grid';
 import { UndoManager } from '../../../../lib/undo-manager';
 import { ExcelBar } from './bar';

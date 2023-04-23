@@ -4,7 +4,7 @@ import { Card, CardContent, Container, Typography } from '@mui/material';
  * A card containing a not found message
  * @constructor
  */
-export function NotFound() {
+export default function NotFound() {
   return <Container maxWidth="sm">
     <Card>
       <CardContent>

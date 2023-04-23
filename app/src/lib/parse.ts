@@ -10,11 +10,13 @@ const SurveyObject = Parse.Object.extend('Survey');
 const ParticipantObject = Parse.Object.extend('Participant');
 const QuestionObject = Parse.Object.extend('Question');
 const AnswerObject = Parse.Object.extend('Answer');
+const AuthenticationObject = Parse.Object.extend('Authentication');
 
 interface Survey {
     objectId: string;
     name: string;
     description?: string;
+    authentication?: Authentication;
 }
 
 interface Participant {
@@ -33,6 +35,13 @@ interface Question {
     timeLimit?: number
 }
 
-export { SurveyObject, ParticipantObject, QuestionObject, AnswerObject };
-export type { Survey, Participant, Question };
+interface Authentication {
+    objectId: string
+    name: string
+    type: string
+    publicConfig: Record<string, any>
+}
+
+export { SurveyObject, ParticipantObject, QuestionObject, AnswerObject, AuthenticationObject };
+export type { Survey, Participant, Question, Authentication };
 export default Parse;

@@ -1,9 +1,10 @@
-const seedrandom = require('seedrandom');
+const seedrandom = require('seedrandom')
+const { v4: uuidv4 } = require('uuid')
 
 const umk = { useMasterKey: true }
 
-const Survey = Parse.Object.extend("Survey");
-const Participant = Parse.Object.extend("Participant");
+const Survey = Parse.Object.extend("Survey")
+const Participant = Parse.Object.extend("Participant")
 
 // Prevent index queries by unauthenticated users
 Parse.Cloud.beforeFind('Survey', async ({ query, user, master }) => {
@@ -53,11 +54,11 @@ Parse.Cloud.afterFind('Question', async ({ objects, user, master, context }) => 
     m.set(id, current)
   }
   for (const [_, value] of m) {
-    const first = value[0];
-    const seed = `${first.get('survey').id}/${first.get('page')}/${first.get('position')}/${context.participantId}`;
-    const rng = seedrandom(seed);
-    const randomIndex = Math.floor(rng() * value.length);
-    const randomElement = value[randomIndex];
+    const first = value[0]
+    const seed = `${first.get('survey').id}/${first.get('page')}/${first.get('position')}/${context.participantId}`
+    const rng = seedrandom(seed)
+    const randomIndex = Math.floor(rng() * value.length)
+    const randomElement = value[randomIndex]
     res.push(randomElement)
   }
 
@@ -69,17 +70,83 @@ Parse.Cloud.beforeSave('Answer', async ({ object, master }) => {
   if (master) return
   const question = await object.get('question').fetch(umk)
   const survey = await question.get('survey').fetch(umk)
+
   if (!isSurveyActive(survey)) {
     throw new Parse.Error(101, "ObjectNotFound")
   }
+
   const participant = await object.get('participant').fetch(umk)
   const givenId = object.get('participantId')
   object.unset('participantId')
   const realId = participant.get('identifier')
-  if (givenId !== realId) {
+
+  if (
+    givenId !== realId ||
+    participant.get('survey').id !== survey.id
+  ) {
     throw new Parse.Error(119, "OperationForbidden")
   }
 })
+
+// Prevent creation of participants for surveys requiring authentication
+Parse.Cloud.beforeSave('Participant', async ({ object, master }) => {
+  if (master) return
+  const survey = await object.get('survey').fetch(umk)
+  const authentication = survey.get('authentication')
+  if (authentication) throw new Parse.Error(119, "OperationForbidden")
+})
+
+Parse.Cloud.define("loginCallback", async (request) => {
+  const {authenticationId, parameters} = request.params
+
+  const query = new Parse.Query("Authentication")
+  query.equalTo("objectId", authenticationId)
+  const authentication = await query.first(umk)
+
+  const survey = { __type: 'Pointer', className: 'Survey', objectId: parameters.survey }
+
+  const user = await validateLogin(authentication, parameters)
+
+  const participant = new Participant()
+  participant.set('survey', survey)
+  participant.set('identifier', uuidv4())
+  participant.set('authenticationInformation', {user})
+  return participant.save(null, umk)
+})
+
+async function validateLogin(authentication, parameters) {
+  switch (authentication.get("type")) {
+    case "cas":
+      const config = await Parse.Config.get()
+      const baseUrl = config.get("baseUrl")
+      const {validationUrl} = authentication.get("privateConfig")
+      const {ticket, survey} = parameters
+
+      const res = await fetch(getValidationUrl(validationUrl, getServiceUrl(authentication.id, baseUrl, survey), ticket))
+      if (res.status !== 200) {
+        throw new Parse.Error(141, "ScriptFailed")
+      }
+      const body = await res.json()
+      return body.serviceResponse.authenticationSuccess.user
+    default:
+      throw new Parse.Error(141, "ScriptFailed")
+  }
+}
+
+function getServiceUrl(objectId, baseUrl, surveyId) {
+  const serviceUrl = new URL(baseUrl)
+  serviceUrl.pathname += `callback/${objectId}`
+  serviceUrl.searchParams.set("survey", surveyId)
+  return serviceUrl.toString()
+}
+
+function getValidationUrl(validationBaseUrl, serviceUrl, ticket) {
+  const validationUrl = new URL(validationBaseUrl)
+  validationUrl.searchParams.set('service', serviceUrl)
+  validationUrl.searchParams.set('ticket', ticket)
+  validationUrl.searchParams.set('format', 'json')
+  return validationUrl.toString()
+}
 
 function isSurveyActive (survey) {
   const now = new Date()
@@ -87,3 +154,4 @@ function isSurveyActive (survey) {
   const to = new Date(survey.get("activeTo"))
   return from && from <= now && (!to || to > now)
 }
+
