@@ -91,7 +91,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
           undoManager.push(data);
         }, 0,
     );
-    const onKeyPress = (event: any) => {
+    const onKeyPress = (event: KeyboardEvent) => {
       let newData: any[][]|undefined;
       if (event.ctrlKey && event.keyCode === 26) {
         newData = undoManager.undo();
