@@ -1,6 +1,7 @@
 package de.thm.mni.ii.ses.services
 
 import de.thm.mni.ii.ses.models.Spreadsheet
+import org.apache.poi.ss.formula.eval.NotImplementedException
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
@@ -11,10 +12,9 @@ class SpreadsheetService {
     fun evaluate(spreadsheet: Spreadsheet): Spreadsheet =
         fillWithValues(spreadsheet, fromArray(spreadsheet))
 
-    private fun fromArray(spreadsheet: Spreadsheet): XSSFSheet {
+    private fun fromArray(spreadsheet: Spreadsheet): XSSFWorkbook {
         val workbook = XSSFWorkbook()
         val sheet = workbook.createSheet()
-        val evaluator = workbook.creationHelper.createFormulaEvaluator()
 
         spreadsheet.cells.forEachIndexed { i, row ->
             val sheetRow = sheet.getRow(i) ?: sheet.createRow(i)
@@ -34,24 +34,27 @@ class SpreadsheetService {
             }
         }
 
-        evaluator.evaluateAll()
-        return sheet
+        return workbook
     }
 
-    private fun fillWithValues(spreadsheet: Spreadsheet, sheet: XSSFSheet): Spreadsheet =
+    private fun fillWithValues(spreadsheet: Spreadsheet, workbook: XSSFWorkbook): Spreadsheet = workbook.creationHelper.createFormulaEvaluator().let { evaluator ->
         Spreadsheet(spreadsheet.cells.mapIndexed { i, row ->
-            val sheetRow = sheet.getRow(i)
+            val sheetRow = workbook.getSheetAt(0).getRow(i)
             List(row.size) { j ->
                 val sheetCell = sheetRow.getCell(j)
 
                 when (sheetCell.cellType) {
-                    CellType.FORMULA -> try  {
-                        sheetCell.numericCellValue
-                    } catch (e: IllegalStateException)  {
+                    CellType.FORMULA -> {
                         try {
-                            sheetCell.stringCellValue
-                        } catch (e: IllegalStateException) {
-                            "ERR"
+                            val formulaValue = evaluator.evaluate(sheetCell)
+                            when (formulaValue.cellType) {
+                                CellType.NUMERIC -> formulaValue.numberValue
+                                CellType.STRING -> formulaValue.stringValue
+                                CellType.ERROR -> "ERR"
+                                else -> ""
+                            }
+                        } catch(e: NotImplementedException) {
+                            "FORMULA UNKNOWN"
                         }
                     }
                     CellType.NUMERIC -> sheetCell.numericCellValue
@@ -60,4 +63,5 @@ class SpreadsheetService {
                 }
             }
         })
+    }
 }
