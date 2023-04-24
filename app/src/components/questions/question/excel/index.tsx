@@ -175,7 +175,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
 
     const gc = grid;
     return () => {
-      gc.removeEventListener('formattext', formatHandler);
+      gc.removeEventListener('formattext', formatTextHandler);
       gc.removeEventListener('endedit', editEndHandler);
       gc.removeEventListener('afterpaste', afterPasteHandler);
       gc.removeEventListener('selectionchanged', selectionChangeHandler);
