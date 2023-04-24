@@ -5,8 +5,8 @@ import { SpreadsheetEvaluator } from '../../../../lib/spreadsheet-evaluator';
 import { createDataGrid } from '../../../../lib/grid';
 import { UndoManager } from '../../../../lib/undo-manager';
 import ExcelBar from './bar';
-import { LoadingButton } from '@mui/lab';
 import structuredClone from '@ungap/structured-clone';
+import { Button } from '@mui/material';
 
 
 /**
@@ -168,12 +168,13 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
   }, [data, grid, question, onChange, setFormulaBarValue, setFormulaBarChangeHandler]);
 
   const resetSheet = () => {
+    if (!confirm('Möchten Sie das Spreadsheet zurücksetzen? Alle Änderungen gehen unwiderruflich verloren.')) return;
     setData(structuredClone(question.options.data));
   };
 
   return <>
-    <LoadingButton onClick={resetSheet}>Reset</LoadingButton>
     <ExcelBar defaultValue={formulaBarValue} onChange={formulaBarChangeHandler} />
     <div ref={gridParent} style={{ overflow: 'auto' }} />
+    <Button onClick={resetSheet}>Zurücksetzen</Button>
   </>;
 }
