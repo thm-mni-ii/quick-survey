@@ -141,6 +141,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
       changeHandler(cell, value);
       navigate(1, 0);
       setFormulaBarValue(value as any);
+      grid.focus()
       return undefined;
     });
 
