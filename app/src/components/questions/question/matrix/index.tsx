@@ -22,7 +22,7 @@ export default function MatrixQuestion({ question, onChange }: QuestionTypeProps
     newSelected[item] = level;
     setSelected(newSelected);
     if (newSelected.length === items.length) {
-        onChange({value: newSelected});
+      onChange({ value: newSelected });
     }
   };
 

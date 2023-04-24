@@ -2,11 +2,11 @@ import { Grid, IconButton, TextField } from '@mui/material';
 import { useEffect, useState } from 'preact/hooks';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
-import {useRef} from "preact/compat";
+import { useRef } from 'preact/compat';
 
 export interface ExcelBarProps {
     defaultValue: string|undefined
-    onChange: (value: string|undefined) => void
+    onChange: (value: string|undefined, newLine: boolean) => void
 }
 
 /**
@@ -17,30 +17,30 @@ export interface ExcelBarProps {
  */
 export default function ExcelBar({ defaultValue, onChange }: ExcelBarProps) {
   const [value, setValue] = useState<string>();
-  const inputFieldRef = useRef<HTMLInputElement>()
+  const inputFieldRef = useRef<HTMLInputElement>();
 
   useEffect(() => {
     setValue(defaultValue);
   }, [defaultValue]);
 
   useEffect(() => {
-
     const onKeyPress = (e: KeyboardEvent) => {
-      if (e.keyCode === 13) {
+      if (e.code === 'Enter') {
         if (inputFieldRef.current === document.activeElement) {
-          onChange(value)
+          onChange(value, true);
+          inputFieldRef.current?.blur();
         }
-      } else if (e.keyCode === 113) {
-        inputFieldRef.current?.focus()
+      } else if (e.code === 'F2') {
+        inputFieldRef.current?.focus();
       }
-    }
+    };
 
     document.addEventListener('keydown', onKeyPress);
 
     return () => {
       document.removeEventListener('keydown', onKeyPress);
-    }
-  }, [value, inputFieldRef])
+    };
+  }, [value, inputFieldRef, onChange]);
 
   return <Grid container>
     <Grid item xs={9} sm={10} lg={11}>
@@ -55,7 +55,7 @@ export default function ExcelBar({ defaultValue, onChange }: ExcelBarProps) {
       />
     </Grid>
     <Grid item xs={3} sm={2} lg={1} style={{ paddingTop: '14px' }}>
-      <IconButton aria-label="confirm input" onClick={() => onChange(value)}>
+      <IconButton aria-label="confirm input" onClick={() => onChange(value, false)}>
         <CheckIcon />
       </IconButton>
       <IconButton aria-label="reset input" onClick={() => setValue(defaultValue)}>
