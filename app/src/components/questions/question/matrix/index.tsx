@@ -21,7 +21,9 @@ export default function MatrixQuestion({ question, onChange }: QuestionTypeProps
     const newSelected = structuredClone(selected);
     newSelected[item] = level;
     setSelected(newSelected);
-    onChange({ value: newSelected });
+    if (newSelected.length === items.length) {
+        onChange({value: newSelected});
+    }
   };
 
   const textAlignCenter = { textAlign: 'center' };
