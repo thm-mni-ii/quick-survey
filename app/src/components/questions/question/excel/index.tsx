@@ -5,6 +5,8 @@ import { SpreadsheetEvaluator } from '../../../../lib/spreadsheet-evaluator';
 import { createDataGrid } from '../../../../lib/grid';
 import { UndoManager } from '../../../../lib/undo-manager';
 import ExcelBar from './bar';
+import structuredClone from '@ungap/structured-clone';
+import { Button } from '@mui/material';
 
 
 /**
@@ -16,10 +18,10 @@ import ExcelBar from './bar';
 export default function ExcelQuestion({ question, onChange }: QuestionTypeProps) {
   const gridParent = useRef<any>();
 
-  const data = question.options.data;
 
   const [formulaBarValue, setFormulaBarValue] = useState();
   const [formulaBarChangeHandler, setFormulaBarChangeHandler] = useState<(value: string|undefined) => void>(() => {});
+  const [data, setData] = useState(structuredClone(question.options.data));
 
   const [grid, setGrid] = useState<any>();
   useEffect(() => {
@@ -108,14 +110,14 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
       } else if (event.ctrlKey && event.code === 'KeyZ') {
         newData = undoManager.redo();
       } else if (['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown'].includes(event.code)) {
-        if (!grid.hasFocus && document.activeElement?.classList.contains("canvas-datagrid-control-input")) {
+        if (!grid.hasFocus && document.activeElement?.classList.contains('canvas-datagrid-control-input')) {
           const [dy, dx] = {
             'ArrowLeft': [0, -1],
             'ArrowUp': [-1, 0],
             'ArrowRight': [0, 1],
-            'ArrowDown': [1, 0]
-          }[event.code]!!
-          navigate(dy, dx)
+            'ArrowDown': [1, 0],
+          }[event.code]!!;
+          navigate(dy, dx);
         } else {
           selectionChangeHandler(null);
           return;
@@ -152,7 +154,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
       changeHandler(cell, value);
       navigate(1, 0);
       setFormulaBarValue(value as any);
-      grid.focus()
+      grid.focus();
       return undefined;
     });
 
@@ -166,8 +168,14 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
     };
   }, [data, grid, question, onChange, setFormulaBarValue, setFormulaBarChangeHandler]);
 
+  const resetSheet = () => {
+    if (!confirm('Möchten Sie das Spreadsheet zurücksetzen? Alle Änderungen gehen unwiderruflich verloren.')) return;
+    setData(structuredClone(question.options.data));
+  };
+
   return <>
     <ExcelBar defaultValue={formulaBarValue} onChange={formulaBarChangeHandler} />
     <div ref={gridParent} style={{ overflow: 'auto' }} />
+    <Button onClick={resetSheet}>Zurücksetzen</Button>
   </>;
 }
