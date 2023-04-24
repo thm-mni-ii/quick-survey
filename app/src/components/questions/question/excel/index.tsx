@@ -62,7 +62,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
       if (!isNaN(Number.parseInt(value, 10))) {
         cell.horizontalAlignment = 'right';
       }
-      if (value) {
+      if (value !== undefined) {
         cell.formattedValue = value.toString();
       } else {
         cell.formattedValue = undefined;
