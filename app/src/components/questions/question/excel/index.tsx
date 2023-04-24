@@ -4,7 +4,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { SpreadsheetEvaluator } from '../../../../lib/spreadsheet-evaluator';
 import { createDataGrid } from '../../../../lib/grid';
 import { UndoManager } from '../../../../lib/undo-manager';
-import { ExcelBar } from './bar';
+import ExcelBar from './bar';
 
 
 /**
@@ -13,7 +13,7 @@ import { ExcelBar } from './bar';
  * @param {function} onChange called when the input is changed
  * @constructor
  */
-export function ExcelQuestion({ question, onChange }: QuestionTypeProps) {
+export default function ExcelQuestion({ question, onChange }: QuestionTypeProps) {
   const gridParent = useRef<any>();
 
   const data = question.options.data;

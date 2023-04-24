@@ -7,7 +7,7 @@ import { TextField } from '@mui/material';
  * @param {function} onChange called when the input is changed
  * @constructor
  */
-export function TextQuestion({ question, onChange }: QuestionTypeProps) {
+export default function TextQuestion({ question, onChange }: QuestionTypeProps) {
   return <TextField
     variant="outlined"
     size="small"

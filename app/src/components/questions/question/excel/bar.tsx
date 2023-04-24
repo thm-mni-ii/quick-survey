@@ -14,7 +14,7 @@ export interface ExcelBarProps {
  * @param {function} onChange called when the user confirms a value change in the bar
  * @constructor
  */
-export function ExcelBar({ defaultValue, onChange }: ExcelBarProps) {
+export default function ExcelBar({ defaultValue, onChange }: ExcelBarProps) {
   const [value, setValue] = useState<string>();
 
   useEffect(() => {

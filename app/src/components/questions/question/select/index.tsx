@@ -8,7 +8,7 @@ import { useMemo } from 'preact/compat';
  * @param {function} onChange called when the input is changed
  * @constructor
  */
-export function SelectQuestion({ question, onChange }: QuestionTypeProps) {
+export default function SelectQuestion({ question, onChange }: QuestionTypeProps) {
   const items = useMemo(() => question.options.items, [question]);
 
   return <FormControl size="small" margin="normal" fullWidth required={question.required}>

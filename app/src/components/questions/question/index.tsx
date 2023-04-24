@@ -1,11 +1,12 @@
 import { Question, Survey } from '../../../lib/parse';
 import { Alert, Typography } from '@mui/material';
-import { ExcelQuestion } from './excel';
-import { TextQuestion } from './text';
-import { SelectQuestion } from './select';
+import ExcelQuestion from './excel';
+import TextQuestion from './text';
+import SelectQuestion from './select';
 import { useEffect, useState } from 'preact/hooks';
 import Countdown from '../../ui/countdown';
 import Markdown from 'markdown-to-jsx';
+import MatrixQuestion from './matrix';
 
 export interface QuestionProps {
     survey: Survey
@@ -22,6 +23,7 @@ const index: Record<string, (props: QuestionTypeProps) => JSX.Element> = {
   text: TextQuestion,
   select: SelectQuestion,
   excel: ExcelQuestion,
+  matrix: MatrixQuestion,
 };
 
 /**
