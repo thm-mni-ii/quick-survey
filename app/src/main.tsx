@@ -7,7 +7,7 @@ import SurveyPage from './pages/survey';
 import NotFound from './components/ui/not-found';
 import AuthenticationCallback from './pages/authentication/callback';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import {CssBaseline, useMediaQuery} from '@mui/material';
+import { CssBaseline, useMediaQuery } from '@mui/material';
 
 /**
  * The root component of the app
@@ -24,7 +24,7 @@ function App() {
       },
       secondary: {
         main: import.meta.env.VITE_THEME_SECONDARY ?? '#9c27b0',
-      }
+      },
     },
   });
 

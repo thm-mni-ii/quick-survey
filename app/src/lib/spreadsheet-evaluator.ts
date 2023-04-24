@@ -30,6 +30,7 @@ export class SpreadsheetEvaluator {
    * @return {number|string} the evaluated value at row and colum
    */
   get(row: number, col: number): any {
+    if (!this.cache) return;
     const r = this.cache[row];
     if (!r) return;
     return r[col];

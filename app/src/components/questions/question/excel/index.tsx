@@ -61,13 +61,27 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
           console.error('An error occurred', value, e);
         }
       }
+
+      if (value === undefined) {
+        cell.formattedValue = undefined;
+        return;
+      }
+
       if (!isNaN(Number.parseInt(value, 10))) {
         cell.horizontalAlignment = 'right';
       }
-      if (value !== undefined) {
-        cell.formattedValue = value.toString();
-      } else {
-        cell.formattedValue = undefined;
+      if (typeof value === 'string' && value.startsWith('!ERROR! ')) {
+        cell.color = 'red';
+        value = value.slice('!ERROR! '.length);
+      }
+      cell.formattedValue = value.toString();
+    };
+
+    const renderHandler = (event: any) => {
+      const cell = event.cell;
+
+      if (cell.color) {
+        event.ctx.fillStyle = cell.color;
       }
     };
 
@@ -145,6 +159,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
     grid.addEventListener('endedit', editEndHandler);
     grid.addEventListener('afterpaste', afterPasteHandler);
     grid.addEventListener('selectionchanged', selectionChangeHandler);
+    grid.addEventListener('rendertext', renderHandler);
     document.addEventListener('keydown', onKeyPress);
 
     setFormulaBarChangeHandler(() => (value: string|undefined, newLine: boolean) => {
@@ -164,6 +179,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
       gc.removeEventListener('endedit', editEndHandler);
       gc.removeEventListener('afterpaste', afterPasteHandler);
       gc.removeEventListener('selectionchanged', selectionChangeHandler);
+      gc.removeEventListener('rendertext', renderHandler);
       document.removeEventListener('keydown', onKeyPress);
     };
   }, [data, grid, question, onChange, setFormulaBarValue, setFormulaBarChangeHandler]);

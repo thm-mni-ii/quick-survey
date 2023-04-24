@@ -1,14 +1,17 @@
 package de.thm.mni.ii.ses.services
 
 import de.thm.mni.ii.ses.models.Spreadsheet
+import org.apache.poi.ss.formula.FormulaParseException
 import org.apache.poi.ss.formula.eval.NotImplementedException
 import org.apache.poi.ss.usermodel.CellType
-import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import org.jboss.logging.Logger
 import javax.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
 class SpreadsheetService {
+    private val logger = Logger.getLogger(SpreadsheetService::class.java)
+
     fun evaluate(spreadsheet: Spreadsheet): Spreadsheet =
         fillWithValues(spreadsheet, fromArray(spreadsheet))
 
@@ -26,7 +29,14 @@ class SpreadsheetService {
                     sheetCell.setCellValue(cell)
                 } else if (cell is String) {
                     if (cell.startsWith("=")) {
-                        sheetCell.cellFormula = cell.removePrefix("=")
+                        try {
+                            sheetCell.cellFormula = cell.removePrefix("=")
+                        } catch (_: FormulaParseException) {
+                            sheetCell.setCellValue("!ERROR! Fehlerhafte Funktion")
+                        } catch (e: Exception) {
+                            logger.error("Unhandled error while setting formula", e)
+                            sheetCell.setCellValue("!ERROR! Fehler beim Zuweisen der Formel")
+                        }
                     } else {
                         sheetCell.setCellValue(cell)
                     }
@@ -50,11 +60,14 @@ class SpreadsheetService {
                             when (formulaValue.cellType) {
                                 CellType.NUMERIC -> formulaValue.numberValue
                                 CellType.STRING -> formulaValue.stringValue
-                                CellType.ERROR -> "ERR"
+                                CellType.ERROR -> "!ERROR! Fehler"
                                 else -> ""
                             }
-                        } catch(e: NotImplementedException) {
-                            "FORMULA UNKNOWN"
+                        } catch (_: NotImplementedException) {
+                            "!ERROR! Unbekannte Funktion"
+                        } catch (e: Exception) {
+                            logger.error("Unhandled error while evaluating formula", e)
+                            "!ERROR! Fehler beim Auswerten der Formel"
                         }
                     }
                     CellType.NUMERIC -> sheetCell.numericCellValue
