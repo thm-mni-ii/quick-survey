@@ -53,6 +53,7 @@ export default function SurveyPage() {
     const storedParticipant = sessionStorage.getItem(`participant/${id}`);
     if (storedParticipant) {
       p = JSON.parse(storedParticipant);
+      sessionStorage.removeItem(`participant/${id}`);
     } else {
       const participant = new ParticipantObject();
       participant.set('identifier', uuidv4());
@@ -103,7 +104,7 @@ export default function SurveyPage() {
     return <Loading />;
   }
 
-  if (survey.authentication && !sessionStorage.getItem(`participant/${id}`)) {
+  if (survey.authentication && !sessionStorage.getItem(`participant/${id}`) && !participant) {
     return <SurveyLogin authentication={survey.authentication} survey={survey} />;
   }
 
