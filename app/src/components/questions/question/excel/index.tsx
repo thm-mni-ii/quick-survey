@@ -110,7 +110,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
       } else if (event.ctrlKey && event.code === 'KeyZ') {
         newData = undoManager.redo();
       } else if (['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown'].includes(event.code)) {
-        if (!grid.hasFocus && document.activeElement?.classList.contains("canvas-datagrid-control-input")) {
+        if (!grid.hasFocus && document.activeElement?.classList.contains('canvas-datagrid-control-input')) {
           const [dy, dx] = {
             'ArrowLeft': [0, -1],
             'ArrowUp': [-1, 0],
