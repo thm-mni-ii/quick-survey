@@ -21,7 +21,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
 
   const [formulaBarValue, setFormulaBarValue] = useState();
   const [formulaBarChangeHandler, setFormulaBarChangeHandler] = useState<(value: string|undefined) => void>(() => {});
-  const [data,setData] = useState(structuredClone(question.options.data));
+  const [data, setData] = useState(structuredClone(question.options.data));
 
   const [grid, setGrid] = useState<any>();
   useEffect(() => {
@@ -115,9 +115,9 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
             'ArrowLeft': [0, -1],
             'ArrowUp': [-1, 0],
             'ArrowRight': [0, 1],
-            'ArrowDown': [1, 0]
-          }[event.code]!!
-          navigate(dy, dx)
+            'ArrowDown': [1, 0],
+          }[event.code]!!;
+          navigate(dy, dx);
         } else {
           selectionChangeHandler(null);
         }
@@ -153,7 +153,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
       changeHandler(cell, value);
       navigate(1, 0);
       setFormulaBarValue(value as any);
-      grid.focus()
+      grid.focus();
       return undefined;
     });
 
@@ -169,7 +169,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
 
   const resetSheet = () => {
     setData(structuredClone(question.options.data));
-  }
+  };
 
   return <>
     <LoadingButton onClick={resetSheet}>Reset</LoadingButton>
