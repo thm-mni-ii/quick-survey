@@ -4,7 +4,6 @@ import de.thm.mni.ii.ses.models.Spreadsheet
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
-import java.lang.IllegalArgumentException
 import javax.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
@@ -49,7 +48,11 @@ class SpreadsheetService {
                     CellType.FORMULA -> try  {
                         sheetCell.numericCellValue
                     } catch (e: IllegalStateException)  {
-                        sheetCell.stringCellValue
+                        try {
+                            sheetCell.stringCellValue
+                        } catch (e: IllegalStateException) {
+                            "ERR"
+                        }
                     }
                     CellType.NUMERIC -> sheetCell.numericCellValue
                     CellType.STRING -> sheetCell.stringCellValue

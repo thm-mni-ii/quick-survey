@@ -9,6 +9,7 @@ function setNoNavigate(value: boolean) {
 }
 
 window.onbeforeunload = function() {
+  sessionStorage.clear();
   return noNavigate ? true : undefined;
 };
 
