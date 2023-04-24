@@ -67,7 +67,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
         return;
       }
 
-      if (!isNaN(Number.parseInt(value, 10))) {
+      if (!isNaN(Number.parseFloat(value))) {
         cell.horizontalAlignment = 'right';
       }
       if (typeof value === 'string' && value.startsWith('!ERROR! ')) {
@@ -91,7 +91,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
         for (let j = 0; j < newData[i].length; j++) {
           const newValue = newData[i][j];
           let value;
-          value = Number.parseInt(newValue, 10);
+          value = Number.parseFloat(newValue);
           if (isNaN(value)) {
             value = newValue;
           }
@@ -113,7 +113,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
     };
     const cellChangeHandler = (cell: any, newValue: any = cell.value) => {
       let value;
-      value = Number.parseInt(newValue, 10);
+      value = Number.parseFloat(newValue);
       if (isNaN(value)) {
         value = newValue;
       }
