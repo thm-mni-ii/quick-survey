@@ -5,6 +5,8 @@ import { SpreadsheetEvaluator } from '../../../../lib/spreadsheet-evaluator';
 import { createDataGrid } from '../../../../lib/grid';
 import { UndoManager } from '../../../../lib/undo-manager';
 import ExcelBar from './bar';
+import { LoadingButton } from '@mui/lab';
+import structuredClone from '@ungap/structured-clone';
 
 
 /**
@@ -16,10 +18,10 @@ import ExcelBar from './bar';
 export default function ExcelQuestion({ question, onChange }: QuestionTypeProps) {
   const gridParent = useRef<any>();
 
-  const data = question.options.data;
 
   const [formulaBarValue, setFormulaBarValue] = useState();
   const [formulaBarChangeHandler, setFormulaBarChangeHandler] = useState<(value: string|undefined) => void>(() => {});
+  const [data,setData] = useState(structuredClone(question.options.data));
 
   const [grid, setGrid] = useState<any>();
   useEffect(() => {
@@ -138,7 +140,12 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
     };
   }, [data, grid, question, onChange, setFormulaBarValue, setFormulaBarChangeHandler]);
 
+  const resetSheet = () => {
+    setData(structuredClone(question.options.data));
+  }
+
   return <>
+    <LoadingButton onClick={resetSheet}>Reset</LoadingButton>
     <ExcelBar defaultValue={formulaBarValue} onChange={formulaBarChangeHandler} />
     <div ref={gridParent} style={{ overflow: 'auto' }} />
   </>;
