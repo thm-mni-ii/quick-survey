@@ -131,6 +131,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
     const editEndHandler = (event: any) => {
       cellChangeHandler(event.cell, event.value);
       undoManager.push(data);
+      selectionChangeHandler(event);
     };
     const afterPasteHandler = (event: any) => setTimeout(
         () => {
