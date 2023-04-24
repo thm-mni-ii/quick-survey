@@ -85,7 +85,33 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
       }
     };
 
-    const changeHandler = (cell: any, newValue: any = cell.value) => {
+    const gridChangeHandler = (newData: any[][]) => {
+      const cells: any[] = [];
+      for (let i = 0; i < newData.length; i++) {
+        for (let j = 0; j < newData[i].length; j++) {
+          const newValue = newData[i][j];
+          let value;
+          value = Number.parseInt(newValue, 10);
+          if (isNaN(value)) {
+            value = newValue;
+          }
+          const cell = grid.getVisibleCellByIndex(j, i);
+          try {
+            data[cell.viewRowIndex][cell.viewColumnIndex] = value;
+          } catch (e) {/* Do nothing */}
+          cells.push(cell);
+        }
+      }
+
+      evaluate.evaluate(data).then(() => {
+        for (const cell of cells) {
+          grid.gotoCell(cell.viewColumnIndex, cell.viewRowIndex);
+          formatHandler(cell);
+        }
+      });
+      onChange({ data });
+    };
+    const cellChangeHandler = (cell: any, newValue: any = cell.value) => {
       let value;
       value = Number.parseInt(newValue, 10);
       if (isNaN(value)) {
@@ -93,17 +119,17 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
       }
       try {
         data[cell.viewRowIndex][cell.viewColumnIndex] = value;
-        evaluate.evaluate(data).then(() => {
-          grid.gotoCell(cell.viewColumnIndex, cell.viewRowIndex);
-          formatHandler(cell);
-        });
       } catch (e) {/* Do nothing */}
+      evaluate.evaluate(data).then(() => {
+        grid.gotoCell(cell.viewColumnIndex, cell.viewRowIndex);
+        formatHandler(cell);
+      });
       onChange({ data });
     };
 
     const formatTextHandler = (event: any) => formatHandler(event.cell);
     const editEndHandler = (event: any) => {
-      changeHandler(event.cell, event.value);
+      cellChangeHandler(event.cell, event.value);
       undoManager.push(data);
     };
     const afterPasteHandler = (event: any) => setTimeout(
@@ -111,7 +137,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
           event.cells.forEach(
               (cell: any) => {
                 const c = grid.getVisibleCellByIndex(cell[1], cell[0]);
-                changeHandler(c);
+                cellChangeHandler(c);
               },
           );
           undoManager.push(data);
@@ -141,11 +167,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
       }
       event.preventDefault();
       if (!newData) return;
-      for (let i = 0; i < newData.length; i++) {
-        for (let j = 0; j < newData[i].length; j++) {
-          changeHandler(grid.getVisibleCellByIndex(j, i), newData[i][j]);
-        }
-      }
+      gridChangeHandler(newData);
     };
     const selectionChangeHandler = (event: any) => {
       setTimeout(() => {
@@ -166,7 +188,8 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
       if (!value) return;
       const activeCell = grid.activeCell;
       const cell = grid.getVisibleCellByIndex(activeCell.columnIndex, activeCell.rowIndex);
-      changeHandler(cell, value);
+      cellChangeHandler(cell, value);
+      undoManager.push(data);
       navigate(1, 0);
       setFormulaBarValue(value as any);
       grid.focus();
