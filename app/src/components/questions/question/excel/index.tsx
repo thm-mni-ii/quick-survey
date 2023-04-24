@@ -108,7 +108,17 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
       } else if (event.ctrlKey && event.code === 'KeyZ') {
         newData = undoManager.redo();
       } else if (['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown'].includes(event.code)) {
-        selectionChangeHandler(null);
+        if (!grid.hasFocus) {
+          const [dy, dx] = {
+            'ArrowLeft': [0, -1],
+            'ArrowUp': [-1, 0],
+            'ArrowRight': [0, 1],
+            'ArrowDown': [1, 0]
+          }[event.code]!!
+          navigate(dy, dx)
+        } else {
+          selectionChangeHandler(null);
+        }
       } else {
         return;
       }
