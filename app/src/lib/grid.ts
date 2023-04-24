@@ -24,5 +24,6 @@ export function createDataGrid(parentNode: any): any {
     showOrderByOption: false,
     autoResizeColumns: true,
     autoResizeRows: true,
+    singleSelectionMode: true,
   });
 }

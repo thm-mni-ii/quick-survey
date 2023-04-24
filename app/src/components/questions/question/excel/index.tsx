@@ -40,6 +40,16 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
     grid.data = data;
     undoManager.push(data);
 
+    const navigate = (dy: number, dx: number) => {
+      const activeCell = grid.activeCell;
+      const nx = activeCell.columnIndex+dx;
+      const ny = activeCell.rowIndex+dy;
+      if (!(nx >= 0 && ny >= 0 && ny < data.length && nx < data[0].length)) return;
+      grid.setActiveCell(nx, ny);
+      grid.gotoCell(nx, ny);
+      selectionChangeHandler(null);
+    };
+
     const formatHandler = (cell: any) => {
       let value = cell.value;
       if (value.toString().startsWith('=')) {
@@ -93,11 +103,16 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
     );
     const onKeyPress = (event: KeyboardEvent) => {
       let newData: any[][]|undefined;
-      if (event.ctrlKey && event.keyCode === 26) {
+      if (event.ctrlKey && event.code === 'KeyY') {
         newData = undoManager.undo();
-      } else if (event.ctrlKey && event.keyCode === 25) {
+      } else if (event.ctrlKey && event.code === 'KeyZ') {
         newData = undoManager.redo();
+      } else if (['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown'].includes(event.code)) {
+        selectionChangeHandler(null);
+      } else {
+        return;
       }
+      event.preventDefault();
       if (!newData) return;
       for (let i = 0; i < newData.length; i++) {
         for (let j = 0; j < newData[i].length; j++) {
@@ -117,13 +132,14 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
     grid.addEventListener('endedit', editEndHandler);
     grid.addEventListener('afterpaste', afterPasteHandler);
     grid.addEventListener('selectionchanged', selectionChangeHandler);
-    document.addEventListener('keypress', onKeyPress);
+    document.addEventListener('keydown', onKeyPress);
 
-    setFormulaBarChangeHandler(() => (value: string|undefined) => {
+    setFormulaBarChangeHandler(() => (value: string|undefined, newLine: boolean) => {
       if (!value) return;
       const activeCell = grid.activeCell;
       const cell = grid.getVisibleCellByIndex(activeCell.columnIndex, activeCell.rowIndex);
       changeHandler(cell, value);
+      navigate(1, 0);
       setFormulaBarValue(value as any);
       return undefined;
     });
@@ -134,7 +150,7 @@ export default function ExcelQuestion({ question, onChange }: QuestionTypeProps)
       gc.removeEventListener('endedit', editEndHandler);
       gc.removeEventListener('afterpaste', afterPasteHandler);
       gc.removeEventListener('selectionchanged', selectionChangeHandler);
-      document.removeEventListener('keypress', onKeyPress);
+      document.removeEventListener('keydown', onKeyPress);
     };
   }, [data, grid, question, onChange, setFormulaBarValue, setFormulaBarChangeHandler]);
 

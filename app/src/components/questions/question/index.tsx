@@ -7,7 +7,7 @@ import { useEffect, useState } from 'preact/hooks';
 import Countdown from '../../ui/countdown';
 import Markdown from 'markdown-to-jsx';
 import MatrixQuestion from './matrix';
-import {red} from "@mui/material/colors";
+import { red } from '@mui/material/colors';
 
 export interface QuestionProps {
     survey: Survey
@@ -52,7 +52,7 @@ export default function QuestionElem({ survey, question, onChange }: QuestionPro
 
   const head = <>
     <Typography variant="h6" component="div">
-      { question.title } { (question.required ? [null] : []).map(() => <span style={{color: red[500]}}>*</span>) }
+      { question.title } { (question.required ? [null] : []).map((_, i) => <span key={i} style={{ color: red[500] }}>*</span>) }
     </Typography>
     {(() => {
       if (deadline) {
