@@ -21,7 +21,7 @@ export default function MatrixQuestion({ question, onChange }: QuestionTypeProps
     const newSelected = structuredClone(selected);
     newSelected[item] = level;
     setSelected(newSelected);
-    if (newSelected.length === items.length) {
+    if (newSelected.filter((item) => item !== undefined).length === items.length) {
       onChange({ value: newSelected });
     }
   };
