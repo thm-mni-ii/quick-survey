@@ -20,10 +20,10 @@ function App() {
     palette: {
       mode: darkMode ? 'dark' : 'light',
       primary: {
-        main: import.meta.env.VITE_THEME_PRIMARY ?? '#1976d2',
+        main: import.meta.env.VITE_THEME_PRIMARY || '#1976d2',
       },
       secondary: {
-        main: import.meta.env.VITE_THEME_SECONDARY ?? '#9c27b0',
+        main: import.meta.env.VITE_THEME_SECONDARY || '#9c27b0',
       },
     },
   });

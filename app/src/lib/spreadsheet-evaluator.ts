@@ -12,7 +12,7 @@ export class SpreadsheetEvaluator {
   async evaluate(cells: any[][]): Promise<void> {
     const i = this.i + 1;
     this.i = i;
-    const evaluated = await fetch(import.meta.env.VITE_EVALUATE_URL, {
+    const evaluated = await fetch(import.meta.env.VITE_EVALUATE_URL || '/evaluate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ cells }),

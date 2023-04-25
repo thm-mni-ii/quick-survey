@@ -1,10 +1,10 @@
 import Parse from 'parse/dist/parse.min.js';
 
 Parse.initialize(
-    import.meta.env.VITE_APP_ID ?? 'parse',
+    import.meta.env.VITE_APP_ID || 'parse',
     import.meta.env.VITE_JS_KEY,
 );
-Parse.serverURL = import.meta.env.VITE_SERVER_URL ?? '/parse';
+Parse.serverURL = import.meta.env.VITE_SERVER_URL || '/parse';
 
 const SurveyObject = Parse.Object.extend('Survey');
 const ParticipantObject = Parse.Object.extend('Participant');
