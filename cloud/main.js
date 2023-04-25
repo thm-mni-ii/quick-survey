@@ -114,6 +114,27 @@ Parse.Cloud.define("loginCallback", async (request) => {
   return participant.save(null, umk)
 })
 
+Parse.Cloud.define("cloneSurvey", async (request) => {
+  if (!request.master) throw new Parse.Error(119, "OperationForbidden")
+  const {id} = request.params
+
+  const surveyQuery = new Parse.Query("Survey")
+  surveyQuery.equalTo("objectId", id)
+  const survey = await surveyQuery.first(umk)
+
+  const newSurvey = await survey.clone().save(null, umk)
+  
+  const questionQuery = new Parse.Query("Question")
+  questionQuery.equalTo("survey", id)
+  const questions = await questionQuery.find(umk)
+
+  for (const question of questions) {
+    await question.clone().save({survey: newSurvey.toPointer()}, umk)
+  }
+
+  return newSurvey
+})
+
 async function validateLogin(authentication, parameters) {
   switch (authentication.get("type")) {
     case "cas":
@@ -154,4 +175,3 @@ function isSurveyActive (survey) {
   const to = new Date(survey.get("activeTo"))
   return from && from <= now && (!to || to > now)
 }
-
