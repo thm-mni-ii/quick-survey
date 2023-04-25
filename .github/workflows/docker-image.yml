@@ -55,3 +55,23 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           cache-from: type=gha,scope=${{ github.workflow }}
           cache-to: type=gha,scope=${{ github.workflow }}
+      - name: Extract ${{ matrix.image }} Docker metadata for image with THM colors
+        id: meta-thm
+        if: ${{ matrix.image == 'app' }}
+        uses: docker/metadata-action@c4ee3adeed93b1fa6a762f209fb01608c1a22f1e # v4.4.0
+        with:
+          images: ${{ env.REGISTRY }}/thm-mni-ii/quick-survey-${{ matrix.image }}
+          flavor: |
+            suffix=-thm
+      - name: Build and push ${{ matrix.image }} Docker image with THM colors
+        if: ${{ matrix.image == 'app' }}
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671 # v4.0.0
+        with:
+          context: ${{ matrix.image }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta-thm.outputs.tags }}
+          labels: ${{ steps.meta-thm.outputs.labels }}
+          builder: ${{ steps.buildx.outputs.name }}
+          cache-from: type=gha,scope=${{ github.workflow }}
+          cache-to: type=gha,scope=${{ github.workflow }}
+          build-args: VITE_THEME_PRIMARY=#80ba24,VITE_THEME_SECONDARY=#4a5c66
