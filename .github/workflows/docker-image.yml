@@ -22,7 +22,7 @@ jobs:
         image:
         - app
         - parse-server
-        - spreadsheet-evaluation-server
+        - ses
 
     steps:
       - name: Checkout repository

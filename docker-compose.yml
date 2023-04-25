@@ -27,6 +27,6 @@ services:
     depends_on:
       - parse
   ses:
-    build: spreadsheet-evaluation-server
+    build: ses
     ports:
       - '127.0.0.1:8080:8080'
