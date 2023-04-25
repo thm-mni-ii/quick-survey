@@ -74,4 +74,6 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           cache-from: type=gha,scope=${{ github.workflow }}
           cache-to: type=gha,scope=${{ github.workflow }}
-          build-args: VITE_THEME_PRIMARY=#80ba24,VITE_THEME_SECONDARY=#4a5c66
+          build-args: |
+            VITE_THEME_PRIMARY=#80ba24
+            VITE_THEME_SECONDARY=#4a5c66
