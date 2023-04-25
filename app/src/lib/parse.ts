@@ -1,7 +1,7 @@
 import Parse from 'parse/dist/parse.min.js';
 
 Parse.initialize(
-    import.meta.env.VITE_APP_ID || 'parse',
+    import.meta.env.VITE_APP_ID || 'qs',
     import.meta.env.VITE_JS_KEY,
 );
 Parse.serverURL = import.meta.env.VITE_SERVER_URL || '/parse';
